@@ -46,6 +46,19 @@ def gameover(screen: pg.Surface) -> None:
     pg.display.update()
     time.sleep(5)
 
+def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+    """
+    爆弾の画像リストと加速度リストを返す関数
+    """
+    bb_imgs = []
+    bb_accs = [a for a in range(1, 11)]  # 加速度リスト
+    for r in range(1, 11):
+        img = pg.Surface((20*r, 20*r))
+        pg.draw.circle(img, (255, 0, 0), (10*r, 10*r), 10*r)
+        img.set_colorkey((0, 0, 0))
+        bb_imgs.append(img)
+    return bb_imgs, bb_accs
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん") #行末
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -59,6 +72,8 @@ def main():
     bb_rct = bb_img.get_rect()
     bb_rct.centerx = random.randint(0,WIDTH)
     bb_rct.centery = random.randint(0,HEIGHT)
+    bb_imgs, bb_accs = init_bb_imgs()
+    bb_img = bb_imgs[0]
     vx,vy = 5,5  #<Bom
 
     # bb_img2 = pg.Surface((20,20))  # Bom2>
@@ -96,18 +111,24 @@ def main():
         # if key_lst[pg.K_RIGHT]:
         #     sum_mv[0] += 5
         # kk_rct.move_ip(sum_mv)
+        # avx, avy = calc_orientation(bb_rct, kk_rct, (vx, vy))
+        bb_img = bb_imgs[min(tmr//500, 9)]  # 拡大
+        avx = vx*bb_accs[min(tmr//500, 9)]  # x抽出
+        avy = vy*bb_accs[min(tmr//500, 9)]  # y抽出
+        bb_rct.move_ip(avx, avy)
+        screen.blit(bb_img, bb_rct)
         yoko, tate = check_bound(bb_rct)
         if not yoko:
             vx *= -1
         if not tate:
             vy *= -1
         screen.blit(kk_img, kk_rct)
-        bb_rct.move_ip(vx,vy)  # Bomspeed
-        screen.blit(bb_img, bb_rct)  # Bom
+        # bb_rct.move_ip(vx,vy)  # Bomspeed
+        # screen.blit(bb_img, bb_rct)  # Bom
         # bb2_rct.move_ip(vx2,vy2)  # Bom2speed
         # screen.blit(bb_img2, bb2_rct)
         if kk_rct.colliderect(bb_rct):
-            gameover(screen)
+            gameover(screen) # GAMEOVER
             return
         pg.display.update()
         tmr += 1
