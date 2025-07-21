@@ -13,6 +13,17 @@ DELTA= {  # 移動量辞書
 }
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
+    """
+    Rectが画面内にあるかどうかを判定する関数
+    戻り値：横方向・縦方向の真理値タプル
+    """
+    yoko, tate = True, True
+    if obj_rct.left < 0 or WIDTH < obj_rct.right:
+        yoko = False
+    if obj_rct.top < 0 or HEIGHT < obj_rct.bottom:
+        tate = False
+    return yoko, tate
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん") #行末
@@ -42,6 +53,11 @@ def main():
             if key_lst[key]:
                 sum_mv[0] += mv[0]
                 sum_mv[1] += mv[1]
+                kk_rct.move_ip(sum_mv)
+            if not check_bound(kk_rct)[0]:
+                kk_rct.move_ip(-sum_mv[0], 0)
+            if not check_bound(kk_rct)[1]:
+                kk_rct.move_ip(0, -sum_mv[1])
         # if key_lst[pg.K_UP]:
         #     sum_mv[1] -= 5
         # if key_lst[pg.K_DOWN]:
@@ -50,7 +66,12 @@ def main():
         #     sum_mv[0] -= 5
         # if key_lst[pg.K_RIGHT]:
         #     sum_mv[0] += 5
-        kk_rct.move_ip(sum_mv)
+        # kk_rct.move_ip(sum_mv)
+        yoko, tate = check_bound(bb_rct)
+        if not yoko:
+            vx *= -1
+        if not tate:
+            vy *= -1
         screen.blit(kk_img, kk_rct)
         bb_rct.move_ip(vx,vy)  # Bomspeed
         screen.blit(bb_img, bb_rct)  # Bom
