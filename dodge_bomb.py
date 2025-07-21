@@ -78,6 +78,16 @@ def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
     }
     return kk_imgs.get(sum_mv, kk_imgs[(0, 0)])
 
+def calc_orientation(org: pg.Rect, dst: pg.Rect, current_v: tuple[float, float]) -> tuple[float, float]:
+    """
+    orgからdstへの方向ベクトルを返す（ノルムをsqrt(50)に）
+    """
+    dx, dy = dst.centerx - org.centerx, dst.centery - org.centery
+    d = max((dx*2 + dy*2)*0.5, 1)
+    if d < 300:
+        return current_v  # 元の値を返す
+    return 5*dx/d, 5*dy/d
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん") #行末
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -123,7 +133,7 @@ def main():
                 kk_rct.move_ip(0, -sum_mv[1])
         kk_img = get_kk_img((0, 0))
         kk_img = get_kk_img(tuple(sum_mv))
-        if sum_mv[0]>0:
+        if sum_mv[0]>0: # こうかとん反転
             if sum_mv[1]>0:
                 kk_img = pg.transform.flip(kk_img,True,False)
             elif sum_mv[1]<0:
@@ -141,8 +151,9 @@ def main():
         # kk_rct.move_ip(sum_mv)
         # avx, avy = calc_orientation(bb_rct, kk_rct, (vx, vy))
         bb_img = bb_imgs[min(tmr//500, 9)]  # 拡大
-        avx = vx*bb_accs[min(tmr//500, 9)]  # x抽出
-        avy = vy*bb_accs[min(tmr//500, 9)]  # y抽出
+        # avx = vx*bb_accs[min(tmr//500, 9)]  # x抽出
+        # avy = vy*bb_accs[min(tmr//500, 9)]  # y抽出
+        avx, avy = calc_orientation(bb_rct, kk_rct, (vx, vy))
         bb_rct.move_ip(avx, avy)
         screen.blit(bb_img, bb_rct)
         yoko, tate = check_bound(bb_rct)
@@ -160,7 +171,7 @@ def main():
             return
         pg.display.update()
         tmr += 1
-        clock.tick(100)
+        clock.tick(50)
 
 
 if __name__ == "__main__":
