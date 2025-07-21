@@ -30,10 +30,12 @@ def gameover(screen: pg.Surface) -> None:
     """
     ゲームオーバー画面を表示する関数
     """
-    black = pg.Surface((WIDTH, HEIGHT))
-    black.set_alpha(200)
-    black.fill((0, 0, 0))
-    screen.blit(black, (0, 0))
+    go_img=pg.Surface((WIDTH,HEIGHT))
+    pg.draw.rect(go_img,(0,0,0),(0,0,1100,650))
+    go_img.set_alpha(170)
+    go_rct = go_img.get_rect()
+    go_rct.center=550,325
+    screen.blit(go_img,go_rct)
 
     font = pg.font.Font(None, 80)
     text = font.render("Game Over", True, (255, 255, 255))
@@ -58,6 +60,23 @@ def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
         img.set_colorkey((0, 0, 0))
         bb_imgs.append(img)
     return bb_imgs, bb_accs
+
+def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
+    """
+    移動方向に対応するこうかとん画像を返す関数
+    """
+    kk_imgs = {
+        (0, 0): pg.image.load("fig/3.png"),
+        (-5, 0): pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9),
+        (+5, 0): pg.transform.rotozoom(pg.image.load("fig/3.png"), 180, 0.9),
+        (0, -5): pg.transform.rotozoom(pg.image.load("fig/3.png"), 270, 0.9),
+        (0, +5): pg.transform.rotozoom(pg.image.load("fig/3.png"), 90, 0.9),
+        (-5, -5): pg.transform.rotozoom(pg.image.load("fig/3.png"), 315, 0.9),
+        (-5, +5): pg.transform.rotozoom(pg.image.load("fig/3.png"), 45, 0.9),
+        (+5, -5): pg.transform.rotozoom(pg.image.load("fig/3.png"), 315, 0.9),
+        (+5, +5): pg.transform.rotozoom(pg.image.load("fig/3.png"), 45, 0.9),
+    }
+    return kk_imgs.get(sum_mv, kk_imgs[(0, 0)])
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん") #行末
@@ -102,6 +121,15 @@ def main():
                 kk_rct.move_ip(-sum_mv[0], 0)
             if not check_bound(kk_rct)[1]:
                 kk_rct.move_ip(0, -sum_mv[1])
+        kk_img = get_kk_img((0, 0))
+        kk_img = get_kk_img(tuple(sum_mv))
+        if sum_mv[0]>0:
+            if sum_mv[1]>0:
+                kk_img = pg.transform.flip(kk_img,True,False)
+            elif sum_mv[1]<0:
+                kk_img = pg.transform.flip(kk_img,True,False)
+            elif sum_mv[1]==0:
+                kk_img = pg.transform.flip(kk_img,False,True)
         # if key_lst[pg.K_UP]:
         #     sum_mv[1] -= 5
         # if key_lst[pg.K_DOWN]:
@@ -132,7 +160,7 @@ def main():
             return
         pg.display.update()
         tmr += 1
-        clock.tick(50)
+        clock.tick(100)
 
 
 if __name__ == "__main__":
