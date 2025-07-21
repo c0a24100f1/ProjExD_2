@@ -1,6 +1,7 @@
 import os
 import random
 import sys
+import time
 import pygame as pg
 
 
@@ -25,6 +26,26 @@ def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
         tate = False
     return yoko, tate
 
+def gameover(screen: pg.Surface) -> None:
+    """
+    ゲームオーバー画面を表示する関数
+    """
+    black = pg.Surface((WIDTH, HEIGHT))
+    black.set_alpha(200)
+    black.fill((0, 0, 0))
+    screen.blit(black, (0, 0))
+
+    font = pg.font.Font(None, 80)
+    text = font.render("Game Over", True, (255, 255, 255))
+    screen.blit(text, (WIDTH//2 - 150, HEIGHT//2 - 40))
+
+    kk_img = pg.image.load("fig/8.png")
+    kk_img = pg.transform.rotozoom(kk_img, 0, 1.0)
+    screen.blit(kk_img, (WIDTH//2 - 220, HEIGHT//2 -50 ))
+    screen.blit(kk_img, (WIDTH//2 + 180, HEIGHT//2 -50 ))
+    pg.display.update()
+    time.sleep(5)
+
 def main():
     pg.display.set_caption("逃げろ！こうかとん") #行末
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -39,6 +60,14 @@ def main():
     bb_rct.centerx = random.randint(0,WIDTH)
     bb_rct.centery = random.randint(0,HEIGHT)
     vx,vy = 5,5  #<Bom
+
+    # bb_img2 = pg.Surface((20,20))  # Bom2>
+    # pg.draw.circle(bb_img2, (0, 255, 0), (10, 10), 10)
+    # bb_img2.set_colorkey((0, 0, 0))
+    # bb2_rct = bb_img2.get_rect()
+    # bb2_rct.centerx = random.randint(0,WIDTH)
+    # vy2 = 5  #<Bom2
+
     clock = pg.time.Clock()
     tmr = 0
     while True:
@@ -75,7 +104,10 @@ def main():
         screen.blit(kk_img, kk_rct)
         bb_rct.move_ip(vx,vy)  # Bomspeed
         screen.blit(bb_img, bb_rct)  # Bom
+        # bb2_rct.move_ip(vx2,vy2)  # Bom2speed
+        # screen.blit(bb_img2, bb2_rct)
         if kk_rct.colliderect(bb_rct):
+            gameover(screen)
             return
         pg.display.update()
         tmr += 1
